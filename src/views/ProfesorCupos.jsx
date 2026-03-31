@@ -85,7 +85,7 @@ const [claseSeleccionada, setClaseSeleccionada] = useState(claseInicial || 'cera
     logo: { width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'white', padding: '2px', objectFit: 'cover' },
     body: { padding: '20px', flex: 1 },
     contenedorSelect: { marginBottom: '20px' },
-    labelSelect: { display: 'block', fontSize: '18px', marginBottom: '8px', color: '#333' },
+    labelSelect: { display: 'block', fontSize: '16px', fontWeight: '700', marginBottom: '8px', color: '#333' },
     selectBase: {
       width: '100%', padding: '12px 15px', borderRadius: '8px', border: '1px solid #ddd',
       backgroundColor: 'var(--color-blanco)', fontSize: '16px', fontFamily: 'var(--font-principal)', cursor: 'pointer'

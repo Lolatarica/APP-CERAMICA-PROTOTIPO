@@ -18,14 +18,17 @@ function InputSimple({ label, type = 'text', placeholder, value, onChange }) {
 
   const labelStyle = {
     display: 'block',
-    fontSize: '18px',
+    fontSize: '16px',
+    fontWeight: '700',
     marginBottom: '8px',
     color: '#333'
   };
 
+  const normalizedLabel = label?.replace(/:\s*$/, '');
+
   return (
     <div>
-      <label style={labelStyle}>{label}</label>
+      <label style={labelStyle}>{normalizedLabel}</label>
       <input 
         type={type} 
         placeholder={placeholder} 

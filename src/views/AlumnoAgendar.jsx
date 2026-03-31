@@ -83,7 +83,8 @@ function AlumnoAgendar({ onConfirmar }) {
     },
     labelSelect: {
       display: 'block',
-      fontSize: '18px',
+      fontSize: '16px',
+      fontWeight: '700',
       marginBottom: '8px',
       color: '#333',
       textAlign: 'center'
@@ -107,6 +108,7 @@ function AlumnoAgendar({ onConfirmar }) {
       gap: '20px',
       marginBottom: '20px',
       fontSize: '16px',
+      fontWeight: '700',
       color: '#333'
     },
     labelRadio: {

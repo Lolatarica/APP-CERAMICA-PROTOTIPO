@@ -77,7 +77,7 @@ function AlumnoLogin({ onSiguiente, onAccesoProfesor }) {
       <main style={styles.bodyForm}>
         {/* Usamos el componente reutilizable InputSimple */}
         <InputSimple 
-          label="Nombre:" 
+          label="Nombre" 
           placeholder="Nombre Apellido" 
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
@@ -85,14 +85,14 @@ function AlumnoLogin({ onSiguiente, onAccesoProfesor }) {
         
         {/* Input de Número (simplificado, no tiene el dropdown "+54" aún) */}
         <InputSimple 
-          label="Número:" 
+          label="Número" 
           placeholder="99 9999 9999" 
           value={numero}
           onChange={(e) => setNumero(e.target.value)}
         />
         
         <InputSimple 
-          label="Mail:" 
+          label="Mail" 
           type="email"
           placeholder="mail@gmail.com" 
           value={mail}
