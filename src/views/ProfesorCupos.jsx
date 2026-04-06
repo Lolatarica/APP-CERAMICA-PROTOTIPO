@@ -1,6 +1,7 @@
 // src/views/ProfesorCupos.jsx
 import React, { useState } from 'react';
 import logoTaller from '../assets/logo_taller.png'; 
+import CalendarioCupos from '../components/CalendarioCupos';
 
 function ProfesorCupos({ onVolver, claseInicial }) {
 const [claseSeleccionada, setClaseSeleccionada] = useState(claseInicial || 'ceramica');  
@@ -165,48 +166,15 @@ const [claseSeleccionada, setClaseSeleccionada] = useState(claseInicial || 'cera
 
         <div style={styles.envoltorioCalendario}>
           <div style={styles.cartelEdicion}>MODO EDICIÓN</div>
-          <table style={styles.calendarioContenedor}>
-            <thead>
-              <tr style={{ backgroundColor: 'var(--color-marron-oscuro)', color: 'white' }}>
-                <th></th>{dias.map(dia => <th key={dia} style={{ padding: '10px 0' }}>{dia}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {horas.map(hora => (
-                <tr key={hora}>
-                  <td style={styles.celdaHora}>{hora}</td>
-                  {dias.map(dia => {
-                    const idTurno = `${dia}-${hora}`;
-                    const cupos = turnosActuales[idTurno]; 
-                    const hayClase = cupos !== undefined;
-                    const estaViendoDetalle = turnoViendoDetalle === idTurno;
 
-                    // Lógica para devolver el estilo exacto:
-                    let estiloAplicado;
-                    if (hayClase) {
-                      estiloAplicado = { ...styles.celdaBase, ...styles.celdaVerde, ...(estaViendoDetalle ? styles.celdaSeleccionadaVista : {}) };
-                      estiloAplicado.cursor = 'pointer'; // Siempre clickeable si hay clase
-                    } else {
-                      estiloAplicado = { ...styles.celdaVacia };
-                      estiloAplicado.cursor = modoEdicion ? 'pointer' : 'default'; // Solo clickeable si estamos editando
-                    }
-
-                    return (
-                      <td 
-                        key={idTurno} 
-                        style={estiloAplicado}
-                        onClick={() => {
-                          if (hayClase || modoEdicion) manejarClicCelda(idTurno, hayClase);
-                        }}
-                      >
-                        {hayClase ? cupos : ''}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <CalendarioCupos
+            dias={dias}
+            horas={horas}
+            turnosActuales={turnosActuales}
+            modoEdicion={modoEdicion}
+            turnoViendoDetalle={turnoViendoDetalle}
+            onCellClick={manejarClicCelda}
+          />
         </div>
 
         {/* TABLA DE DETALLES */}

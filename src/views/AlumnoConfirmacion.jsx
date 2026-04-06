@@ -65,11 +65,52 @@ function AlumnoConfirmacion({ nombre = "Nombre Apellido", turno = "Día - hora" 
       color: '#333',
       lineHeight: '1.5'
     },
+    cartelDestacado: {
+      backgroundColor: '#FFF3CD',
+      borderRadius: '12px',
+      padding: '25px 20px',
+      margin: '30px 0',
+      textAlign: 'center',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+    },
+    cartelTexto: {
+      fontSize: '18px',
+      color: '#333',
+      lineHeight: '1.6',
+      marginBottom: '20px'
+    },
+    botonesContainer: {
+      display: 'flex',
+      gap: '15px',
+      justifyContent: 'center',
+      flexWrap: 'wrap',
+      width: '100%'
+    },
+    boton: {
+      padding: '12px 24px',
+      borderRadius: '8px',
+      border: 'none',
+      fontSize: '16px',
+      fontWeight: 'bold',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+      flex: '1 1 calc(50% - 8px)',
+      minWidth: '180px'
+    },
+    botonWhatsApp: {
+      backgroundColor: '#25D366',
+      color: 'white'
+    },
+    botonCopiar: {
+      backgroundColor: 'var(--color-marron-oscuro)',
+      color: '#E0C9A6'
+    },
     saludoCursiva: {
       fontFamily: 'var(--font-titulo)',
       fontSize: '40px',
       color: 'var(--color-marron-oscuro)',
-      marginTop: '40px'
+      marginTop: '10px'
     },
     textoFooter: {
       textAlign: 'center',
@@ -89,6 +130,16 @@ function AlumnoConfirmacion({ nombre = "Nombre Apellido", turno = "Día - hora" 
       height: '60px',
       cursor: 'pointer'
     }
+  };
+
+  const handleWhatsApp = () => {
+    window.open('https://wa.me/+541234567890', '_blank'); // Cambia el número por el de la profesora
+  };
+
+  const handleCopiar = () => {
+    const infoCuenta = 'CBU: XXXXXXXXXXXXXXXXXXXXXX\nAlias: tu.alias\nTitular: Nombre';
+    navigator.clipboard.writeText(infoCuenta);
+    alert('Información copiada al portapapeles!');
   };
 
   return (
@@ -111,12 +162,36 @@ function AlumnoConfirmacion({ nombre = "Nombre Apellido", turno = "Día - hora" 
           a las <strong>{hora}</strong>.
         </div>
 
-        <h2 style={styles.saludoCursiva}>Te esperamos!</h2>
-      </main>
+        <div style={styles.cartelDestacado}>
+          <div style={styles.cartelTexto}>
+            ⚠️ Recorda que se debe <br />
+            abonar un adelanto de <strong>$10.000</strong> y luego enviar<br />
+            el comprobante a la profesora para reservar tu clase!
+          </div>
+          <div style={styles.botonesContainer}>
+            <button 
+              style={{...styles.boton, ...styles.botonCopiar}}
+              onMouseOver={(e) => e.target.style.opacity = '0.9'}
+              onMouseOut={(e) => e.target.style.opacity = '1'}
+              onClick={handleCopiar}
+            >
+              📋 Datos de transferencia
+            </button>
+            <button 
+              style={{...styles.boton, ...styles.botonWhatsApp}}
+              onMouseOver={(e) => e.target.style.opacity = '0.9'}
+              onMouseOut={(e) => e.target.style.opacity = '1'}
+              onClick={handleWhatsApp}
+            >
+              💬 Enviar comprobante
+            </button>
+            
+          </div>
+        </div>
+                <h2 style={styles.saludoCursiva}>Te esperamos!</h2>
 
-      <div style={styles.textoFooter}>
-        Si crees que hubo un error comunicate con la profesora por WhatsApp
-      </div>
+
+      </main>
 
       <img src={iconWhatsApp} alt="WhatsApp" style={styles.whatsapp} />
     </div>

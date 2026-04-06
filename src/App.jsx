@@ -8,15 +8,16 @@ import ProfesorDashboard from './views/ProfesorDashboard'
 import ProfesorCupos from './views/ProfesorCupos'
 import ProfesorClases from './views/ProfesorClases'
 import ProfesorAlumnos from './views/ProfesorAlumnos' // La nueva vista de agenda
+import ProfesorPagos from './views/ProfesorPagos'
 
 function App() {
   // --- ESTADOS DE NAVEGACIÓN ---
   // Controla qué pantalla se ve: 'login', 'agendar', 'confirmacion', 'profesor', 'profesor-clases', 'profesor-cupos', 'profesor-alumnos'
-  const [vistaActual, setVistaActual] = useState('login') 
+  const [vistaActual, setVistaActual] = useState('login') // Controla qué pantalla se ve: 'login', 'agendar', 'confirmacion', 'profesor', 'profesor-clases', 'profesor-cupos', 'profesor-alumnos'
   
   // Guardan datos temporales para pasar entre pantallas
-  const [claseParaVer, setClaseParaVer] = useState('ceramica') 
-  const [turnoElegido, setTurnoElegido] = useState('')
+  const [claseParaVer, setClaseParaVer] = useState('ceramica') // Guardan datos temporales para pasar entre pantallas
+  const [turnoElegido, setTurnoElegido] = useState('') // Guardan datos temporales para pasar entre pantallas
 
   // --- FUNCIONES PARA CAMBIAR DE PANTALLA ---
   const manejarConfirmacionAlumno = (turno) => {
@@ -59,7 +60,8 @@ function App() {
           onLogout={() => setVistaActual('login')} 
           onIrAClases={() => setVistaActual('profesor-clases')}
           onIrAAlumnos={() => setVistaActual('profesor-alumnos')}
-          onIrACupos={() => setVistaActual('profesor-cupos')} 
+          onIrACupos={() => setVistaActual('profesor-cupos')}
+          onIrAPagos={() => setVistaActual('profesor-pagos')}
         />
       )}
 
@@ -83,6 +85,13 @@ function App() {
       {vistaActual === 'profesor-alumnos' && (
         <ProfesorAlumnos 
           onVolver={() => setVistaActual('profesor')} 
+        />
+      )}
+
+      {/* 6. CONTROL DE PAGOS */}
+      {vistaActual === 'profesor-pagos' && (
+        <ProfesorPagos
+          onVolver={() => setVistaActual('profesor')}
         />
       )}
     </div>

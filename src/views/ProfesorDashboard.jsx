@@ -3,7 +3,7 @@ import React from 'react';
 import logoTaller from '../assets/logo_taller.png'; 
 import BotonPrincipal from '../components/BotonPrincipal';
 
-function ProfesorDashboard({ onLogout, onIrACupos, onIrAClases, onIrAAlumnos }) {  const agendamientosRecientes = [
+function ProfesorDashboard({ onLogout, onIrACupos, onIrAClases, onIrAAlumnos, onIrAPagos }) {  const agendamientosRecientes = [
     { id: 1, alumno: 'María López', clase: 'Taller de cerámica', horario: 'Lun 10:00' },
     { id: 2, alumno: 'Juan Pérez', clase: 'Taller de cerámica', horario: 'Mar 16:00' },
     { id: 3, alumno: 'Ana Gómez', clase: 'Taller de pintura', horario: 'Mie 14:00' },
@@ -152,12 +152,16 @@ function ProfesorDashboard({ onLogout, onIrACupos, onIrAClases, onIrAAlumnos }) 
             onClick={onIrACupos} 
           />
           <BotonPrincipal 
-         text="Gestionar clases" 
-         onClick={onIrAClases} 
-       />
+            text="Gestionar clases" 
+            onClick={onIrAClases} 
+          />
           <BotonPrincipal 
             text="Alumnos" 
-            onClick={onIrAAlumnos} // Conectar aquí
+            onClick={onIrAAlumnos}
+          />
+          <BotonPrincipal
+            text="Control de pagos"
+            onClick={onIrAPagos}
           />
         </div>
 

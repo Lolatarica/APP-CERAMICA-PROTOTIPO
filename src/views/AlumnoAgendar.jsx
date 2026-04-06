@@ -4,6 +4,7 @@ import logoTaller from '../assets/logo_taller.png';
 import iconWhatsApp from '../assets/whatsapp.png';
 import BotonPrincipal from '../components/BotonPrincipal';
 import InputSimple from '../components/InputSimple';
+import CalendarioCupos from '../components/CalendarioCupos';
 
 function AlumnoAgendar({ onConfirmar }) {
   // 1. NUEVO ESTADO: Guarda qué taller se eligió (arranca vacío)
@@ -29,6 +30,11 @@ function AlumnoAgendar({ onConfirmar }) {
   // Si no hay clase seleccionada, pasamos un array vacío. 
   // Si hay, buscamos la lista correspondiente en nuestro "diccionario".
   const turnosDisponibles = tipoClase === '' ? [] : turnosPorClase[tipoClase];
+
+  // Mapa para el componente compartido (mismo comportamiento visual, sin cambiar lógica)
+  const turnosActuales = Object.fromEntries(
+    turnosDisponibles.map((idTurno) => [idTurno, 4])
+  );
 
   // Función que se ejecuta cuando cambian el desplegable
   const manejarCambioClase = (e) => {
@@ -245,45 +251,18 @@ function AlumnoAgendar({ onConfirmar }) {
             </div>
           )}
 
-          <table style={styles.calendarioContenedor}>
-            <thead>
-              <tr style={{ backgroundColor: 'var(--color-marron-oscuro)', color: 'white' }}>
-                <th></th>
-                {dias.map(dia => (
-                  <th key={dia} style={{ padding: '10px 0' }}>{dia}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {horas.map(hora => (
-                <tr key={hora}>
-                  <td style={styles.celdaHora}>{hora}</td>
-                  {dias.map(dia => {
-                    const idTurno = `${dia}-${hora}`;
-                    const hayClase = turnosDisponibles.includes(idTurno);
-                    const estaSeleccionado = slotSeleccionado === idTurno;
-
-                    if (!hayClase) {
-                      return <td key={idTurno} style={styles.celdaVacia}></td>;
-                    }
-
-                    return (
-                      <td 
-                        key={idTurno}
-                        style={{
-                          ...styles.celdaBase,
-                          ...(estaSeleccionado ? styles.celdaMarrón : styles.celdaVerde)
-                        }}
-                        onClick={() => setSlotSeleccionado(idTurno)}
-                      >
-                        4
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div style={styles.calendarioContenedor}>
+            <CalendarioCupos
+              dias={dias}
+              horas={horas}
+              turnosActuales={turnosActuales}
+              modoEdicion={false}
+              turnoViendoDetalle={slotSeleccionado}
+              onCellClick={(idTurno, hayClase) => {
+                if (hayClase) setSlotSeleccionado(idTurno);
+              }}
+            />
+          </div>
         </div>
 
         <BotonPrincipal 
