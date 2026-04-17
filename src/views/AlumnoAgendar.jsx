@@ -1,60 +1,87 @@
 // src/views/AlumnoAgendar.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import logoTaller from '../assets/logo_taller.png'; 
 import iconWhatsApp from '../assets/whatsapp.png';
 import BotonPrincipal from '../components/BotonPrincipal';
-import InputSimple from '../components/InputSimple';
 import CalendarioCupos from '../components/CalendarioCupos';
+import { DIAS_SEMANA, HORAS_BASE } from '../utils/agendaConfig';
 
-function AlumnoAgendar({ onConfirmar }) {
-  // 1. NUEVO ESTADO: Guarda qué taller se eligió (arranca vacío)
-  const [tipoClase, setTipoClase] = useState(''); 
-  
-  const [esParaMi, setEsParaMi] = useState(true);
-  const [nombreTercero, setNombreTercero] = useState('');
-  const [slotSeleccionado, setSlotSeleccionado] = useState(null);
+function AlumnoAgendar({ clases = [], sucursales = [], turnosPorSucursalYClase = {}, onConfirmar }) {
+  const [sucursalSeleccionada, setSucursalSeleccionada] = useState('');
+  const [claseSeleccionada, setClaseSeleccionada] = useState('');
+  const [slotSeleccionado, setSlotSeleccionado] = useState('');
+  const [mostrarInfoClase, setMostrarInfoClase] = useState(false);
 
-  const dias = ['LU', 'MA', 'MI', 'JU', 'VI', 'SA'];
-  const horas = ['09:00', '10:30', '14:00', '16:00', '18:00'];
+  useEffect(() => {
+    if (sucursalSeleccionada && !sucursales.some((sucursal) => sucursal.id === sucursalSeleccionada)) {
+      setSucursalSeleccionada('');
+    }
+  }, [sucursalSeleccionada, sucursales]);
 
-  // 2. NUEVA LÓGICA: Separamos los turnos según el taller
-  const turnosPorClase = {
-    ceramica: [
-      'LU-09:00', 'MA-10:30', 'MA-16:00', 'MI-14:00', 'JU-10:30', 'JU-18:00', 'VI-09:00', 'VI-14:00'
-    ],
-    pintura: [
-      'LU-14:00', 'LU-16:00', 'MI-09:00', 'MI-18:00', 'JU-14:00', 'VI-16:00', 'SA-10:30'
-    ]
-  };
+  useEffect(() => {
+    if (claseSeleccionada && !clases.some((clase) => clase.id === claseSeleccionada)) {
+      setClaseSeleccionada('');
+    }
+  }, [claseSeleccionada, clases]);
 
-  // Si no hay clase seleccionada, pasamos un array vacío. 
-  // Si hay, buscamos la lista correspondiente en nuestro "diccionario".
-  const turnosDisponibles = tipoClase === '' ? [] : turnosPorClase[tipoClase];
+  useEffect(() => {
+    setSlotSeleccionado('');
+  }, [sucursalSeleccionada, claseSeleccionada]);
 
-  // Mapa para el componente compartido (mismo comportamiento visual, sin cambiar lógica)
-  const turnosActuales = Object.fromEntries(
-    turnosDisponibles.map((idTurno) => [idTurno, 4])
+  useEffect(() => {
+    setMostrarInfoClase(false);
+  }, [claseSeleccionada]);
+
+  const sucursalActual = useMemo(
+    () => sucursales.find((sucursal) => sucursal.id === sucursalSeleccionada) || null,
+    [sucursales, sucursalSeleccionada]
   );
 
-  // Función que se ejecuta cuando cambian el desplegable
-  const manejarCambioClase = (e) => {
-    setTipoClase(e.target.value);
-    setSlotSeleccionado(null); // Borramos el turno seleccionado anterior por si cambian de taller
+  const claseActual = useMemo(
+    () => clases.find((clase) => clase.id === claseSeleccionada) || null,
+    [clases, claseSeleccionada]
+  );
+
+  const turnosActuales = turnosPorSucursalYClase[sucursalSeleccionada]?.[claseSeleccionada] || {};
+  const otraSucursal = sucursales.find((sucursal) => sucursal.id !== sucursalSeleccionada) || null;
+
+  const textosPrecio = {
+    ceramica: 'El precio del taller es de $68000 por 4 clases por mes.',
+    pintura: 'Consultanos el valor actualizado de este taller.',
   };
+
+  const textosInfoClase = {
+    ceramica: {
+      titulo: 'Taller de Ceramica',
+      descripcion: 'Incluye una clase semanal. El valor mensual corresponde a 4 clases por mes y los materiales especiales se coordinan aparte si hiciera falta.',
+    },
+    pintura: {
+      titulo: 'Taller de Pintura',
+      descripcion: 'El valor puede variar segun grupo y materiales. Si queres este taller, escribinos por WhatsApp y te pasamos el detalle actualizado.',
+    },
+  };
+
+  const pasoTallerVisible = Boolean(sucursalSeleccionada);
+  const pasoHorarioVisible = Boolean(sucursalSeleccionada && claseSeleccionada);
+  const botonAgendarVisible = Boolean(slotSeleccionado);
+  const infoClaseActual = textosInfoClase[claseSeleccionada] || null;
 
   const styles = {
     container: {
       display: 'flex',
       flexDirection: 'column',
       minHeight: '100vh',
-      maxWidth: '480px',
       margin: '0 auto',
-      position: 'relative'
+      position: 'relative',
+      backgroundColor: 'var(--color-crema)'
     },
     header: {
       backgroundColor: 'var(--color-marron-oscuro)',
       padding: '40px 20px 20px 20px',
       textAlign: 'center',
+      position: 'sticky',
+      top: 0,
+      zIndex: 40,
     },
     logo: {
       width: '150px',
@@ -72,107 +99,160 @@ function AlumnoAgendar({ onConfirmar }) {
       margin: '2px 0 0 0',
     },
     body: {
-      padding: '20px',
+      padding: '34px 14px 28px',
       flex: 1,
     },
-    subtitulo: {
-      fontSize: '20px',
-      textAlign: 'center',
-      marginBottom: '30px',
-      fontWeight: '400',
-      color: '#333'
+    bloquePaso: {
+      marginBottom: '18px',
     },
-    
-    // ESTILOS DEL NUEVO DESPLEGABLE
-    contenedorSelect: {
-      marginBottom: '25px',
+    bloquePasoOculto: {
+      opacity: 0,
+      maxHeight: 0,
+      overflow: 'hidden',
+      marginBottom: 0,
+      pointerEvents: 'none',
+      transform: 'translateY(-8px)',
     },
-    labelSelect: {
+    bloquePasoVisible: {
+      opacity: 1,
+      maxHeight: '1200px',
+      overflow: 'visible',
+      pointerEvents: 'auto',
+      transform: 'translateY(0)',
+      transition: 'opacity 0.24s ease, transform 0.24s ease, max-height 0.3s ease',
+    },
+    tituloPaso: {
+      fontSize: '15px',
+      fontWeight: '800',
+      color: 'var(--color-marron-oscuro)',
+      margin: '0 0 10px 0',
+      lineHeight: '1.3'
+    },
+    labelCampo: {
       display: 'block',
       fontSize: '16px',
       fontWeight: '700',
-      marginBottom: '8px',
+      marginBottom: '10px',
       color: '#333',
-      textAlign: 'center'
+      lineHeight: '1.25'
     },
     selectBase: {
       width: '100%',
-      padding: '12px 15px',
-      borderRadius: '8px',
+      padding: '13px 14px',
+      borderRadius: '10px',
       border: '1px solid #ddd',
       backgroundColor: 'var(--color-blanco)',
-      fontSize: '16px',
+      fontSize: '15px',
       fontFamily: 'var(--font-principal)',
-      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)',
+      boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.08)',
       cursor: 'pointer'
     },
-
-    filaOpciones: {
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      gap: '20px',
-      marginBottom: '20px',
-      fontSize: '16px',
-      fontWeight: '700',
-      color: '#333'
-    },
-    labelRadio: {
+    filaPrecio: {
       display: 'flex',
       alignItems: 'center',
-      gap: '8px',
-      cursor: 'pointer'
+      justifyContent: 'space-between',
+      gap: '10px',
+      marginTop: '8px'
     },
-    cuadradito: {
-      width: '18px',
-      height: '18px',
-      border: '1px solid #777',
-      display: 'inline-block'
+    precioTexto: {
+      flex: 1,
+      fontSize: '13px',
+      color: '#8b7b6f',
+      lineHeight: '1.35',
+      margin: 0
     },
-    textoAviso: {
-      textAlign: 'center',
-      fontSize: '14px',
-      marginBottom: '10px',
-      lineHeight: '1.4'
-    },
-    
-    calendarioContenedor: {
-      width: '100%',
-      marginTop: '20px',
-      borderCollapse: 'collapse',
-      textAlign: 'center',
-      fontSize: '14px',
-      // 3. LÓGICA DE NUBLADO: Si tipoClase está vacío, aplicamos blur y bloqueamos los clics
-      filter: tipoClase === '' ? 'blur(4px) grayscale(0.5)' : 'none',
-      opacity: tipoClase === '' ? '0.6' : '1',
-      pointerEvents: tipoClase === '' ? 'none' : 'auto',
-      transition: 'all 0.4s ease' // Animación suave al desenfocar/enfocar
-    },
-    celdaHora: {
-      backgroundColor: '#C8A97E',
+    botonInfo: {
+      border: 'none',
+      backgroundColor: '#efe3d1',
       color: 'var(--color-marron-oscuro)',
-      fontWeight: 'bold',
-      padding: '10px 5px',
-      border: '1px solid white'
+      borderRadius: '999px',
+      padding: '9px 14px',
+      fontSize: '13px',
+      fontWeight: '700',
+      whiteSpace: 'nowrap',
+      boxShadow: '0 6px 12px rgba(200, 169, 126, 0.18)',
+      cursor: 'pointer'
     },
-    celdaBase: {
-      border: '1px solid white',
-      padding: '10px 5px',
+    overlay: {
+      position: 'fixed',
+      inset: 0,
+      backgroundColor: 'rgba(55, 42, 34, 0.45)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '18px',
+      zIndex: 80,
+    },
+    modalInfo: {
+      width: '100%',
+      maxWidth: '360px',
+      backgroundColor: '#fffaf3',
+      borderRadius: '18px',
+      padding: '22px 18px 18px',
+      boxShadow: '0 22px 38px rgba(0,0,0,0.18)',
+    },
+    modalTitulo: {
+      margin: '0 0 10px 0',
+      color: 'var(--color-marron-oscuro)',
+      fontSize: '20px',
+      lineHeight: '1.2',
+    },
+    modalSubtitulo: {
+      margin: '0 0 8px 0',
+      color: '#7a6b5f',
+      fontSize: '13px',
+      fontWeight: '800',
+      textTransform: 'uppercase',
+      letterSpacing: '0.04em',
+    },
+    modalTexto: {
+      margin: '0 0 16px 0',
+      color: '#5f544a',
+      fontSize: '14px',
+      lineHeight: '1.5',
+    },
+    modalBoton: {
+      width: '100%',
+      border: 'none',
+      backgroundColor: 'var(--color-marron-oscuro)',
+      color: '#fff',
+      borderRadius: '12px',
+      padding: '13px 16px',
+      fontSize: '15px',
+      fontWeight: '700',
       cursor: 'pointer',
-      fontWeight: 'bold',
-      color: 'white',
-      transition: 'background-color 0.2s ease'
     },
-    celdaVerde: {
-      backgroundColor: '#95B89F', 
+    textoHorarios: {
+      fontSize: '13px',
+      color: '#8b7b6f',
+      margin: '0 0 12px 0'
     },
-    celdaMarrón: {
-      backgroundColor: '#B59672', 
+    calendarioMarco: {
+      width: '100%',
+      borderRadius: '14px',
+      overflow: 'hidden',
+      backgroundColor: '#fffdf9',
+      boxShadow: '0 10px 20px rgba(93, 77, 66, 0.08)',
     },
-    celdaVacia: {
-      backgroundColor: '#EAEAEA',
-      border: '1px solid white',
-      padding: '10px 5px',
+    botonSucursalAlternativa: {
+      width: '100%',
+      marginTop: '14px',
+      border: 'none',
+      backgroundColor: '#efe3d1',
+      color: 'var(--color-marron-oscuro)',
+      borderRadius: '14px',
+      padding: '13px 16px',
+      fontSize: '14px',
+      fontWeight: '700',
+      cursor: 'pointer',
+      boxShadow: '0 8px 18px rgba(200, 169, 126, 0.2)'
+    },
+    aclaracion: {
+      fontSize: '12px',
+      color: '#9a8a7d',
+      textAlign: 'center',
+      lineHeight: '1.35',
+      margin: '16px 8px 0'
     },
     whatsapp: {
       position: 'fixed', 
@@ -184,78 +264,79 @@ function AlumnoAgendar({ onConfirmar }) {
     }
   };
 
+  const handleAgendar = () => {
+    if (!sucursalSeleccionada || !claseSeleccionada) {
+      alert('Primero elegi sucursal y taller.');
+      return;
+    }
+
+    if (!slotSeleccionado) {
+      alert('Por favor, selecciona un horario en el calendario.');
+      return;
+    }
+
+    onConfirmar({
+      turnoId: slotSeleccionado,
+      sucursalId: sucursalSeleccionada,
+      claseId: claseSeleccionada,
+    });
+  };
+
   return (
-    <div style={styles.container}>
-      <header style={styles.header}>
+    <div className="app-shell" style={styles.container}>
+      <header className="app-header" style={styles.header}>
         <img src={logoTaller} alt="Logo" style={styles.logo} />
         <h1 style={styles.title}>Agenda tu clase!</h1>
       </header>
 
-      <main style={styles.body}>
-        <h2 style={styles.subtitulo}>¡Bienvenido, Nombre apellido!</h2>
-
-        {/* NUEVO DESPLEGABLE PARA ELEGIR TALLER */}
-        <div style={styles.contenedorSelect}>
-          <label style={styles.labelSelect}>¿Qué taller querés cursar?</label>
-          <select 
-            style={styles.selectBase} 
-            value={tipoClase} 
-            onChange={manejarCambioClase}
+      <main className="app-main" style={styles.body}>
+        <section style={styles.bloquePaso}>
+          <h2 style={styles.tituloPaso}>Paso 2: Seleccione la sucursal</h2>
+          <label style={styles.labelCampo}>¿En qué sucursal querés cursar?*</label>
+          <select
+            style={styles.selectBase}
+            value={sucursalSeleccionada}
+            onChange={(event) => setSucursalSeleccionada(event.target.value)}
           >
-            <option value="" disabled>Seleccioná un taller...</option>
-            <option value="ceramica">Taller de Cerámica</option>
-            <option value="pintura">Taller de Pintura</option>
+            <option value="" disabled>Selecciona una sucursal...</option>
+            {sucursales.map((sucursal) => (
+              <option key={sucursal.id} value={sucursal.id}>{sucursal.nombre}</option>
+            ))}
           </select>
-        </div>
+        </section>
 
-        <div style={styles.filaOpciones}>
-          <span>¿La clase es para usted?</span>
-          <label style={styles.labelRadio} onClick={() => setEsParaMi(true)}>
-            Sí: <div style={{...styles.cuadradito, backgroundColor: esParaMi ? 'var(--color-marron-oscuro)' : 'transparent'}}></div>
-          </label>
-          <label style={styles.labelRadio} onClick={() => setEsParaMi(false)}>
-            No: <div style={{...styles.cuadradito, backgroundColor: !esParaMi ? 'var(--color-marron-oscuro)' : 'transparent'}}></div>
-          </label>
-        </div>
+        <section style={{ ...styles.bloquePaso, ...(pasoTallerVisible ? styles.bloquePasoVisible : styles.bloquePasoOculto) }}>
+          <h2 style={styles.tituloPaso}>Paso 3: Seleccione el taller al que desea asistir</h2>
+          <label style={styles.labelCampo}>¿Qué taller querés cursar?*</label>
+          <select
+            style={styles.selectBase}
+            value={claseSeleccionada}
+            onChange={(event) => setClaseSeleccionada(event.target.value)}
+          >
+            <option value="" disabled>Selecciona un taller...</option>
+            {clases.map((clase) => (
+              <option key={clase.id} value={clase.id}>{clase.nombre}</option>
+            ))}
+          </select>
 
-        {!esParaMi && (
-          <div style={{ marginBottom: '20px' }}>
-            <p style={styles.textoAviso}>Ingrese el nombre y apellido de<br/>quien se presentará a la clase:</p>
-            <InputSimple 
-              placeholder="Nombre Apellido" 
-              value={nombreTercero}
-              onChange={(e) => setNombreTercero(e.target.value)}
-            />
+          <div style={styles.filaPrecio}>
+            <p style={styles.precioTexto}>{textosPrecio[claseSeleccionada] || 'Consultanos el valor actualizado de este taller.'}</p>
+            <button type="button" style={styles.botonInfo} onClick={() => setMostrarInfoClase(true)}>Mas info</button>
           </div>
-        )}
+        </section>
 
-        {/* El contenedor del calendario ahora tiene la lógica del blur */}
-        <div style={{ position: 'relative' }}>
-          
-          {/* Mensaje por encima del calendario si está nublado */}
-          {tipoClase === '' && (
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              zIndex: 10,
-              color: 'var(--color-marron-oscuro)',
-              fontWeight: 'bold',
-              textAlign: 'center',
-              backgroundColor: 'rgba(255,255,255,0.8)',
-              padding: '10px 20px',
-              borderRadius: '8px'
-            }}>
-              Elegí un taller para ver los horarios
-            </div>
-          )}
+        <section style={{ ...styles.bloquePaso, ...(pasoHorarioVisible ? styles.bloquePasoVisible : styles.bloquePasoOculto) }}>
+          <h2 style={styles.tituloPaso}>Paso 4: Seleccione un horario</h2>
+          <p style={styles.textoHorarios}>
+            {sucursalActual ? `Horarios disponibles para ${sucursalActual.nombre}.` : 'Seleccione una sucursal para ver los horarios.'}
+          </p>
 
-          <div style={styles.calendarioContenedor}>
+          <div style={styles.calendarioMarco}>
             <CalendarioCupos
-              dias={dias}
-              horas={horas}
+              dias={DIAS_SEMANA}
+              horas={HORAS_BASE}
               turnosActuales={turnosActuales}
+              compacto
               modoEdicion={false}
               turnoViendoDetalle={slotSeleccionado}
               onCellClick={(idTurno, hayClase) => {
@@ -263,22 +344,37 @@ function AlumnoAgendar({ onConfirmar }) {
               }}
             />
           </div>
-        </div>
 
-        <BotonPrincipal 
-       text="Agendar" 
-       onClick={() => {
-         if (tipoClase === '') {
-           alert('Primero tenés que elegir un taller.');
-         } else if (!slotSeleccionado) {
-           alert('Por favor, seleccioná un horario en el calendario.');
-         } else {
-           // Llamamos a la función que nos pasa App.jsx
-           onConfirmar(slotSeleccionado);
-         }
-       }} 
-     />
+          {otraSucursal && (
+            <button
+              type="button"
+              style={styles.botonSucursalAlternativa}
+              onClick={() => setSucursalSeleccionada(otraSucursal.id)}
+            >
+              {`Ver horarios de ${otraSucursal.nombre}`}
+            </button>
+          )}
+
+          <p style={styles.aclaracion}>
+            La cruz roja indica que los cupos estan completos en ese dia y horario.
+          </p>
+        </section>
+
+        {botonAgendarVisible && <BotonPrincipal text="Agendar" onClick={handleAgendar} />}
       </main>
+
+      {mostrarInfoClase && infoClaseActual && (
+        <div style={styles.overlay} onClick={() => setMostrarInfoClase(false)}>
+          <div style={styles.modalInfo} onClick={(event) => event.stopPropagation()}>
+            <h3 style={styles.modalTitulo}>{infoClaseActual.titulo}</h3>
+            <p style={styles.modalSubtitulo}>Aclaraciones</p>
+            <p style={styles.modalTexto}>{infoClaseActual.descripcion}</p>
+            <button type="button" style={styles.modalBoton} onClick={() => setMostrarInfoClase(false)}>
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
 
       <img src={iconWhatsApp} alt="WhatsApp" style={styles.whatsapp} />
     </div>

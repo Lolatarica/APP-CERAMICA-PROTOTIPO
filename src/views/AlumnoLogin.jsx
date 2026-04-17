@@ -9,10 +9,78 @@ import InputSimple from '../components/InputSimple';
 import BotonPrincipal from '../components/BotonPrincipal';
 
 function AlumnoLogin({ onSiguiente, onAccesoProfesor }) {
+  const TELEFONO_MINIMO_DIGITOS = 10;
   // Estado para guardar los datos del formulario (luego los usaremos)
+  const [participanteAlternativo, setParticipanteAlternativo] = useState('');
   const [nombre, setNombre] = useState('');
   const [mail, setMail] = useState('');
   const [numero, setNumero] = useState(''); // El número lo simplificamos por ahora
+  const [errores, setErrores] = useState({});
+
+  const limpiarError = (campo) => {
+    setErrores((erroresActuales) => {
+      if (!erroresActuales[campo]) {
+        return erroresActuales;
+      }
+
+      return {
+        ...erroresActuales,
+        [campo]: null,
+      };
+    });
+  };
+
+  const handleSiguiente = () => {
+    const nombreLimpio = nombre.trim();
+    const telefonoLimpio = numero.trim();
+    const mailLimpio = mail.trim();
+
+    const nuevosErrores = {
+      nombre: !nombreLimpio
+        ? 'Este casillero es obligatorio para continuar'
+        : null,
+      numero: !telefonoLimpio
+        ? 'Este casillero es obligatorio para continuar'
+        : telefonoLimpio.length < TELEFONO_MINIMO_DIGITOS
+          ? `El telefono debe tener al menos ${TELEFONO_MINIMO_DIGITOS} numeros`
+          : null,
+      mail: !mailLimpio
+        ? 'Este casillero es obligatorio para continuar'
+        : !mailLimpio.includes('@')
+          ? 'El mail debe incluir una arroba (@)'
+          : null,
+    };
+
+    setErrores(nuevosErrores);
+
+    if (Object.values(nuevosErrores).some(Boolean)) {
+      return;
+    }
+
+    onSiguiente();
+  };
+
+  const handleNombreChange = (e) => {
+    const valorSinNumeros = e.target.value.replace(/\d/g, '');
+    setNombre(valorSinNumeros);
+    limpiarError('nombre');
+  };
+
+  const handleParticipanteAlternativoChange = (e) => {
+    const valorSinNumeros = e.target.value.replace(/\d/g, '');
+    setParticipanteAlternativo(valorSinNumeros);
+  };
+
+  const handleNumeroChange = (e) => {
+    const soloNumeros = e.target.value.replace(/\D/g, '');
+    setNumero(soloNumeros);
+    limpiarError('numero');
+  };
+
+  const handleMailChange = (e) => {
+    setMail(e.target.value);
+    limpiarError('mail');
+  };
 
   // Estilos específicos para esta pantalla
   const styles = {
@@ -20,13 +88,16 @@ function AlumnoLogin({ onSiguiente, onAccesoProfesor }) {
       display: 'flex',
       flexDirection: 'column',
       minHeight: '100vh',
-      maxWidth: '480px', // Limitar ancho para que parezca celular en PC
       margin: '0 auto',  
+      backgroundColor: 'var(--color-crema)',
     },
     header: {
       backgroundColor: 'var(--color-marron-oscuro)',
       padding: '40px 20px 20px 20px',
       textAlign: 'center',
+      position: 'sticky',
+      top: 0,
+      zIndex: 40,
     },
     logo: {
       width: '150px',
@@ -44,8 +115,56 @@ function AlumnoLogin({ onSiguiente, onAccesoProfesor }) {
       margin: '2px 0 0 0',
     },
     bodyForm: {
-      padding: '30px',
+      padding: '46px 30px 30px',
       flex: 1, // Ocupa el espacio restante
+      display: 'flex',
+      alignItems: 'center',
+    },
+    formStage: {
+      width: '100%',
+      maxWidth: '880px',
+      margin: '0 auto',
+    },
+    subtitle: {
+      textAlign: 'center',
+      fontSize: '20px',
+      fontWeight: '600',
+      color: 'var(--color-marron-oscuro)',
+      margin: '0 0 20px 0',
+    },
+    helperText: {
+      textAlign: 'center',
+      fontSize: '14px',
+      color: '#666',
+      margin: '-10px 0 24px 0',
+    },
+    columnStack: {
+      display: 'grid',
+      gap: '0px',
+      alignContent: 'start',
+    },
+    optionalLabel: {
+      display: 'block',
+      fontSize: '13px',
+      color: '#7A7A7A',
+      margin: '0 0 8px 0',
+      lineHeight: '1.4',
+    },
+    optionalInput: {
+      width: '100%',
+      padding: '10px 14px',
+      borderRadius: '8px',
+      border: '1px solid #d8d8d8',
+      backgroundColor: '#f7f4ef',
+      fontSize: '15px',
+      color: '#5c5c5c',
+      boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.06)',
+      marginBottom: '18px',
+    },
+    formContent: {
+      transform: 'scale(0.96)',
+      transformOrigin: 'top center',
+      width: '100%',
     },
     aviso: {
       textAlign: 'center',
@@ -65,55 +184,80 @@ function AlumnoLogin({ onSiguiente, onAccesoProfesor }) {
   };
 
   return (
-    <div style={styles.container}>
+    <div className="app-shell" style={styles.container}>
       
       {/* HEADER: Marrón, Logo, Título */}
-      <header style={styles.header}>
+      <header className="app-header" style={styles.header}>
         <img src={logoTaller} alt="Logo El taller de enfrente" style={styles.logo} />
         <h1 style={styles.title}>Agenda tu clase!</h1>
       </header>
 
       {/* CUERPO: Formulario y Botón */}
-      <main style={styles.bodyForm}>
-        {/* Usamos el componente reutilizable InputSimple */}
-        <InputSimple 
-          label="Nombre" 
-          placeholder="Nombre Apellido" 
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-        />
-        
-        {/* Input de Número (simplificado, no tiene el dropdown "+54" aún) */}
-        <InputSimple 
-          label="Número" 
-          placeholder="99 9999 9999" 
-          value={numero}
-          onChange={(e) => setNumero(e.target.value)}
-        />
-        
-        <InputSimple 
-          label="Mail" 
-          type="email"
-          placeholder="mail@gmail.com" 
-          value={mail}
-          onChange={(e) => setMail(e.target.value)}
-        />
+      <main className="app-main desktop-centered-main" style={styles.bodyForm}>
+        <div className="content-shell content-shell--md" style={styles.formStage}>
+          <h2 style={styles.subtitle}>Paso 1: Ingrese su información personal</h2>
+          <p style={styles.helperText}>Los casilleros con * son obligatorios.</p>
 
-        <p style={styles.aviso}>
-          Si usted ya se agendo una vez no es necesario agendarse todas las semanas.
-        </p>
+          <div style={styles.formContent}>
+            <div className="desktop-form-grid">
+              <div style={styles.columnStack}>
+                <label style={styles.optionalLabel}>
+                  Si la clase es para otra persona, por favor ingrese el nombre y apellido de la persona que participara.
+                </label>
+                <input
+                  type="text"
+                  placeholder="Nombre y apellido de quien participara"
+                  value={participanteAlternativo}
+                  onChange={handleParticipanteAlternativoChange}
+                  style={styles.optionalInput}
+                />
 
-        {/* Usamos el componente reutilizable BotonPrincipal */}
-        <BotonPrincipal 
-          text="Siguiente" 
-          onClick={onSiguiente} 
-        />
-        <p 
-          style={{ textAlign: 'center', marginTop: '20px', fontSize: '12px', color: '#888', cursor: 'pointer', textDecoration: 'underline' }}
-          onClick={onAccesoProfesor}
-        >
-          Acceso Profesor
-        </p>
+                <InputSimple 
+                  label="Nombre y Apellido/s *" 
+                  placeholder="Nombre Apellido" 
+                  value={nombre}
+                  onChange={handleNombreChange}
+                  error={errores.nombre}
+                />
+              </div>
+
+              <div style={styles.columnStack}>
+                <InputSimple 
+                  label="Mail *" 
+                  type="email"
+                  placeholder="mail@gmail.com" 
+                  value={mail}
+                  onChange={handleMailChange}
+                  error={errores.mail}
+                />
+
+                <InputSimple 
+                  label="Telefono/Celular *" 
+                  placeholder="Ej: 1123456789" 
+                  value={numero}
+                  onChange={handleNumeroChange}
+                  error={errores.numero}
+                  inputMode="numeric"
+                />
+              </div>
+            </div>
+
+            <p style={styles.aviso}>
+              Si usted ya se agendo una vez no es necesario agendarse todas las semanas.
+            </p>
+
+            <BotonPrincipal 
+              text="Siguiente" 
+              onClick={handleSiguiente} 
+            />
+            <p 
+              style={{ textAlign: 'center', marginTop: '20px', fontSize: '12px', color: '#888', cursor: 'pointer', textDecoration: 'underline' }}
+              onClick={onAccesoProfesor}
+            >
+              Acceso Profesor
+            </p>
+          </div>
+        </div>
       </main>
       {/* Ícono de WhatsApp Flotante */}
       <img src={iconWhatsApp} alt="WhatsApp" style={styles.whatsapp} />

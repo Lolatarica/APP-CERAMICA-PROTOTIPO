@@ -1,21 +1,28 @@
 // src/views/ProfesorDashboard.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import logoTaller from '../assets/logo_taller.png'; 
 import BotonPrincipal from '../components/BotonPrincipal';
+import { formatScheduleLabel } from '../utils/timeFormat';
 
-function ProfesorDashboard({ onLogout, onIrACupos, onIrAClases, onIrAAlumnos, onIrAPagos }) {  const agendamientosRecientes = [
+function ProfesorDashboard({ onLogout, onIrAClases, onIrACupos, onIrASucursales, onIrAAlumnos, onIrAPagos }) {
+  const [agendamientosRecientes, setAgendamientosRecientes] = useState([
     { id: 1, alumno: 'María López', clase: 'Taller de cerámica', horario: 'Lun 10:00' },
     { id: 2, alumno: 'Juan Pérez', clase: 'Taller de cerámica', horario: 'Mar 16:00' },
     { id: 3, alumno: 'Ana Gómez', clase: 'Taller de pintura', horario: 'Mie 14:00' },
     { id: 4, alumno: 'Lucas Silva', clase: 'Taller de cerámica', horario: 'Jue 10:30' },
-  ];
+  ]);
+
+  const marcarComprobanteInicial = (idReserva) => {
+    setAgendamientosRecientes((reservasActuales) =>
+      reservasActuales.filter((reserva) => reserva.id !== idReserva)
+    );
+  };
 
   const styles = {
     container: {
       display: 'flex',
       flexDirection: 'column',
       minHeight: '100vh',
-      maxWidth: '480px',
       margin: '0 auto',
       backgroundColor: 'var(--color-crema)'
     },
@@ -26,6 +33,9 @@ function ProfesorDashboard({ onLogout, onIrACupos, onIrAClases, onIrAAlumnos, on
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
+      position: 'sticky',
+      top: 0,
+      zIndex: 40,
     },
     title: {
       color: '#E0C9A6',
@@ -54,7 +64,7 @@ function ProfesorDashboard({ onLogout, onIrACupos, onIrAClases, onIrAAlumnos, on
       textDecoration: 'underline'
     },
     body: {
-      padding: '20px',
+      padding: '22px 10px 24px',
       flex: 1,
     },
     // Estilos de la tabla de agendamientos
@@ -63,51 +73,99 @@ function ProfesorDashboard({ onLogout, onIrACupos, onIrAClases, onIrAAlumnos, on
       borderRadius: '12px',
       overflow: 'hidden', // Para que los bordes redondeados corten la tabla
       boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-      marginBottom: '30px'
+      marginBottom: '26px'
     },
     tablaTituloContenedor: {
       backgroundColor: '#C8A97E',
-      padding: '15px',
+      padding: '16px 12px',
       textAlign: 'center',
     },
     tablaTitulo: {
       fontFamily: 'var(--font-titulo)',
-      fontSize: '24px',
+      fontSize: '22px',
       color: 'var(--color-marron-oscuro)',
       margin: 0
+    },
+    tablaWrap: {
+      width: '100%',
+      overflow: 'hidden'
     },
     table: {
       width: '100%',
       borderCollapse: 'collapse',
+      borderSpacing: 0,
       textAlign: 'center',
-      fontSize: '14px'
+      fontSize: '13px',
+      tableLayout: 'fixed'
+    },
+    theadRow: {
+      backgroundColor: 'var(--color-marron-oscuro)'
     },
     th: {
-      backgroundColor: 'var(--color-marron-oscuro)',
+      backgroundColor: 'transparent',
       color: 'white',
-      padding: '12px 5px',
-      fontWeight: 'normal'
+      padding: '11px 4px',
+      fontWeight: 'normal',
+      border: 'none'
+    },
+    thAlumno: {
+      width: '22%'
+    },
+    thClase: {
+      width: '24%'
+    },
+    thHorario: {
+      width: '24%'
+    },
+    thAccion: {
+      width: '30%'
     },
     td: {
-      padding: '12px 5px',
-      color: '#333'
+      padding: '10px 4px',
+      color: '#333',
+      verticalAlign: 'middle',
+      lineHeight: '1.25',
+      wordBreak: 'break-word'
+    },
+    tdAccion: {
+      padding: '8px 4px',
+      verticalAlign: 'middle'
     },
     // Fila gris alternada
     trGris: {
       backgroundColor: '#EAEAEA'
     },
+    botonComprobanteInicial: {
+      width: '100%',
+      padding: '9px 8px',
+      minHeight: '56px',
+      borderRadius: '14px',
+      border: 'none',
+      backgroundColor: '#d9eef7',
+      color: '#205b73',
+      fontWeight: '800',
+      fontSize: '11px',
+      lineHeight: '1.15',
+      cursor: 'pointer',
+      boxShadow: '0 8px 18px rgba(120, 180, 206, 0.24)'
+    },
+    tablaVacia: {
+      padding: '18px 12px',
+      textAlign: 'center',
+      color: '#777'
+    },
     botonesContainer: {
       display: 'flex',
       flexDirection: 'column',
-      gap: '15px' // Espacio entre botones
+      gap: '8px' // Espacio entre botones
     }
   };
 
   return (
-    <div style={styles.container}>
+    <div className="app-shell app-shell--wide" style={styles.container}>
       
       {/* HEADER DEL PROFESOR */}
-      <header style={styles.header}>
+      <header className="app-header" style={styles.header}>
         <h1 style={styles.title}>Panel del profesor</h1>
         <div style={styles.logoContainer}>
           <img src={logoTaller} alt="Logo" style={styles.logo} />
@@ -117,36 +175,55 @@ function ProfesorDashboard({ onLogout, onIrACupos, onIrAClases, onIrAAlumnos, on
         </div>
       </header>
 
-      <main style={styles.body}>
+      <main className="app-main content-shell content-shell--xl" style={styles.body}>
+        <div className="split-layout split-layout--dashboard">
         
         {/* TABLA DE AGENDAMIENTOS */}
         <div style={styles.tablaCard}>
           <div style={styles.tablaTituloContenedor}>
             <h2 style={styles.tablaTitulo}>Agendamientos recientes</h2>
           </div>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Alumnos</th>
-                <th style={styles.th}>Clase</th>
-                <th style={styles.th}>Horario</th>
-              </tr>
-            </thead>
-            <tbody>
-              {agendamientosRecientes.map((reserva, index) => (
-                // Lógica para alternar colores: si el índice es impar, fila gris
-                <tr key={reserva.id} style={index % 2 !== 0 ? styles.trGris : {}}>
-                  <td style={styles.td}>{reserva.alumno}</td>
-                  <td style={styles.td}>{reserva.clase}</td>
-                  <td style={styles.td}>{reserva.horario}</td>
+          <div style={styles.tablaWrap}>
+            <table style={styles.table}>
+              <thead>
+                <tr style={styles.theadRow}>
+                  <th style={{ ...styles.th, ...styles.thAlumno }}>Alumnos</th>
+                  <th style={{ ...styles.th, ...styles.thClase }}>Clase</th>
+                  <th style={{ ...styles.th, ...styles.thHorario }}>Horario</th>
+                  <th style={{ ...styles.th, ...styles.thAccion }}></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {agendamientosRecientes.map((reserva, index) => (
+                  <tr key={reserva.id} style={index % 2 !== 0 ? styles.trGris : {}}>
+                    <td style={styles.td}>{reserva.alumno}</td>
+                    <td style={styles.td}>{reserva.clase}</td>
+                    <td style={styles.td}>{formatScheduleLabel(reserva.horario)}</td>
+                    <td style={styles.tdAccion}>
+                      <button
+                        type="button"
+                        style={styles.botonComprobanteInicial}
+                        onClick={() => marcarComprobanteInicial(reserva.id)}
+                      >
+                        Comprobante inicial
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {agendamientosRecientes.length === 0 && (
+                  <tr>
+                    <td style={styles.tablaVacia} colSpan={4}>
+                      No hay agendamientos pendientes de comprobante.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* BOTONERA PRINCIPAL */}
-        <div style={styles.botonesContainer}>
+        <div className="actions-grid actions-grid--2 sticky-desktop" style={styles.botonesContainer}>
           <BotonPrincipal 
             text="Gestionar cupos" 
             onClick={onIrACupos} 
@@ -154,6 +231,10 @@ function ProfesorDashboard({ onLogout, onIrACupos, onIrAClases, onIrAAlumnos, on
           <BotonPrincipal 
             text="Gestionar clases" 
             onClick={onIrAClases} 
+          />
+          <BotonPrincipal
+            text="Sucursales"
+            onClick={onIrASucursales}
           />
           <BotonPrincipal 
             text="Alumnos" 
@@ -163,6 +244,7 @@ function ProfesorDashboard({ onLogout, onIrACupos, onIrAClases, onIrAAlumnos, on
             text="Control de pagos"
             onClick={onIrAPagos}
           />
+        </div>
         </div>
 
       </main>
